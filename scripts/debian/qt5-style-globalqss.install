@@ -1,0 +1,2 @@
+debian/qt5-style-globalqss.sh etc/profile.d
+build-qt5/libglobalqssplugin.so usr/lib/x86_64-linux-gnu/qt5/plugins/styles

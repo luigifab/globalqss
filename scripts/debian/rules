@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	cmake -S src-5 -B build-qt5 \
+		-DCMAKE_C_FLAGS="$(CFLAGS) -D_FORTIFY_SOURCE=2" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -D_FORTIFY_SOURCE=2" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
+	cmake -S src-6 -B build-qt6 \
+		-DCMAKE_C_FLAGS="$(CFLAGS) -D_FORTIFY_SOURCE=2" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -D_FORTIFY_SOURCE=2" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
+
+override_dh_auto_build:
+	$(MAKE) -C build-qt5
+	$(MAKE) -C build-qt6
+
+execute_before_dh_install:
+	cp data/profile.sh debian/qt5-style-globalqss.sh
+	cp data/profile.sh debian/qt6-style-globalqss.sh
