@@ -3,7 +3,7 @@
 # Fedora: configure: error: C compiler cannot create executables? remove and reinstall glibc-devel gcc
 
 cd "$(dirname "$0")"
-version="1.0.0"
+version="1.1.0"
 
 
 mkdir -p builder ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
@@ -34,18 +34,18 @@ else
 fi
 
 # create package (rpm sign https://access.redhat.com/articles/3359321)
-rpmbuild -ba globalqss.spec
+rpmbuild --quiet -ba globalqss.spec
+echo "=================================== rpm-sign =="
 rpm --addsign ~/rpmbuild/RPMS/*/*globalqss*.rpm
 rpm --addsign ~/rpmbuild/SRPMS/*globalqss*.rpm
 mv ~/rpmbuild/RPMS/*/*globalqss*.rpm builder/
 mv ~/rpmbuild/SRPMS/*globalqss*.rpm builder/
-echo "==========================="
 rpm --checksig builder/*.rpm
-echo "==========================="
-rpmlint globalqss.spec builder/*.rpm
-echo "==========================="
-ls -dlth "$PWD/"builder/*.rpm
-echo "==========================="
+echo "=================================== rpm-lint =="
+rpmlint globalqss.spec builder/*.rpm | grep globalqss
+echo "==============================================="
+rm builder/*debug*rpm
+ls -dlth "$PWD"/builder/*.rpm
 
 # cleanup
 rm -rf builder/*/

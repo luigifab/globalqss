@@ -2,7 +2,7 @@
 %bcond qt6 1
 
 Name:          globalqss
-Version:       1.0.0
+Version:       1.1.0
 Release:       1%{?dist}
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
@@ -152,5 +152,8 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 
 
 %changelog
+* Tue May 05 2026 Fabrice Creuzot <code@luigifab.fr> - 1.1.0-1
+- New upstream release
+
 * Tue Mar 03 2026 Fabrice Creuzot <code@luigifab.fr> - 1.0.0-1
 - Initial Fedora package release (Closes: rhbz#2429934)

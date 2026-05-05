@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/01/01/2026
+ * Updated J/30/04/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -21,24 +21,28 @@
 #define GLOBALQSS_H
 
 #include <QApplication>
-#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusError>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QProcess>
 #include <QProxyStyle>
 #include <QString>
-#include <QStringList>
-#include <QWidget>
 
 class GlobalQSS : public QProxyStyle
 {
 	Q_OBJECT
+	bool gqss_monitor = false;
 	bool gqss_applied = false;
 
 public:
 	GlobalQSS() = default;
+	~GlobalQSS();
 	void polish(QApplication *app) override;
+
+private slots:
+	void onNotify(const QString &path);
 };
 
 #endif

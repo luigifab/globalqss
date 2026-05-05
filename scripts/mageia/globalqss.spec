@@ -2,7 +2,7 @@
 %bcond qt6 1
 
 Name:          globalqss
-Version:       1.0.0
+Version:       1.1.0
 Release:       %mkrel 1
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
@@ -123,13 +123,13 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 %if %{with qt5}
  pushd build-qt5
  install -Dpm 644 ../data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt5-style-globalqss.sh
- install -Dpm 755 build/libglobalqssplugin.so %{buildroot}/usr/lib64/qt5/plugins/styles/libglobalqssplugin.so
+ install -Dpm 755 build/libglobalqssplugin.so %{buildroot}%{_libdir}/qt5/plugins/styles/libglobalqssplugin.so
  popd
 %endif
 %if %{with qt6}
  pushd build-qt6
  install -Dpm 644 ../data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt6-style-globalqss.sh
- install -Dpm 755 build/libglobalqssplugin.so %{buildroot}/usr/lib64/qt6/plugins/styles/libglobalqssplugin.so
+ install -Dpm 755 build/libglobalqssplugin.so %{buildroot}%{_libdir}/qt6/plugins/styles/libglobalqssplugin.so
  popd
 %endif
 
@@ -138,7 +138,7 @@ Après la désinstallation, veillez à supprimer le fichier de config :
  %config(noreplace) %{_sysconfdir}/profile.d/qt5-style-globalqss.sh
  %license LICENSE
  %doc README.md
- %attr(644,root,root) /usr/lib64/qt5/plugins/styles/libglobalqssplugin.so
+ %attr(644,root,root) %{_libdir}/qt5/plugins/styles/libglobalqssplugin.so
 %endif
 
 %if %{with qt6}
@@ -146,11 +146,14 @@ Après la désinstallation, veillez à supprimer le fichier de config :
  %config(noreplace) %{_sysconfdir}/profile.d/qt6-style-globalqss.sh
  %license LICENSE
  %doc README.md
- %attr(644,root,root) /usr/lib64/qt6/plugins/styles/libglobalqssplugin.so
+ %attr(644,root,root) %{_libdir}/qt6/plugins/styles/libglobalqssplugin.so
 %endif
 
 
 
 %changelog
+* Tue May 05 2026 Fabrice Creuzot <code@luigifab.fr> - 1.1.0-1.mga
+- New upstream release
+
 * Tue Mar 03 2026 Fabrice Creuzot <code@luigifab.fr> - 1.0.0-1.mga
 - Initial Mageia package release (Closes: mbz#35065)

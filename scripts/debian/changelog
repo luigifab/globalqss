@@ -1,5 +1,5 @@
-qt-style-globalqss (1.0.0-1) experimental; urgency=low
+qt-style-globalqss (1.1.0-1) experimental; urgency=low
 
   * Initial Debian package release (Closes: #1129266)
 
- -- Fabrice Creuzot <code@luigifab.fr>  Tue, 03 Mar 2026 20:00:00 +0000
+ -- Fabrice Creuzot <code@luigifab.fr>  Tue, 05 May 2026 20:00:00 +0000

@@ -2,7 +2,7 @@
 
 This engine allows theming of Qt applications using QSS files, similar to how GTK applications are themed with CSS files.
 
-It finds the theme name from the environment variable `GQSS_THEME`, or from MATE, or from GNOME.
+It finds the theme name from the environment variable `GQSS_THEME`, or from MATE settings, or from GNOME settings. It supports theme reload on desktop theme change (via DBus).
 
 ## Tips
 
@@ -15,7 +15,7 @@ For an example, see [awf-qt](https://github.com/luigifab/awf-extended) and [huma
 
 ## Installation
 
-It requires **Qt 5.15** or **Qt 6.0+** *(including 6.10)*.
+It requires **Qt 5.15** or **Qt 6.0+** *(including 6.11)*.
 
 #### Installation for Debian, Devuan, Ubuntu, Trisquel, Linux Mint, MX Linux
 
@@ -93,16 +93,19 @@ When the plugin has applied the theme, `GQSS_READY=yes` is set.
 From any program, you can reload the theme with:
 ```c++
 	if (qEnvironmentVariableIsSet("GQSS_SET")) {
+		//qputenv("GQSS_THEME", "[newThemeName]");
 		qputenv("GQSS_RELOAD", "yes");
-		//qputenv("GQSS_THEME", "[themeName]");
-		QApplication::setStyle(QStyleFactory::create("GlobalQSS"));
+		QApplication::style()->polish(qApp);
+		QApplication::processEvents();
 		window->adjustSize();
 	}
 ```
 
+On Fedora with Qt 5, the GTK 3 platform theme _(qt5-qtbase-gui)_ works better than on Debian _(qt5-gtk-platformtheme)_, but the fonts remain blurry, see [bug 2459509](https://bugzilla.redhat.com/show_bug.cgi?id=2459509).
+
 #### VLC
 
-The customize interface dialog crash the program.
+The customize interface dialog can crash the program.
 
 #### OpenShot
 
@@ -110,12 +113,12 @@ Stay on version 3.1.1 to use the system theme.
 
 ## Copyright
 
-- Current version: 1.0.0 (03/03/2026)
-- Compatibility: Qt 5.15 / 6.0..6.10
+- Current version: 1.1.0 (05/05/2026)
+- Compatibility: Qt 5.15 / 6.0..6.11
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 
 This program is provided under the terms of the **GNU GPLv2+** license.\
-If you like, take some of your time to improve some translations, go to https://bit.ly/2HyCCEc.
+If you like, take some of your time to improve the translations, go to https://bit.ly/2HyCCEc.
 
 ## Packages in official distros repositories
 

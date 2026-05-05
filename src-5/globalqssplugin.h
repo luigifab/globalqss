@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/01/01/2026
+ * Updated V/13/03/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -28,7 +28,7 @@ class GlobalQSSPlugin : public QStylePlugin
 	Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "globalqssplugin.json")
 
 public:
-	GlobalQSSPlugin(QObject *parent = 0);
+	GlobalQSSPlugin(QObject *parent = nullptr);
 	QStringList keys() const;
 	QStyle *create(const QString &key) override;
 };

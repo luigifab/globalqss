@@ -6,13 +6,11 @@
 rm -rf src-*/builder/
 
 cd src-5/builder/
-cmake ..
-make
+cmake .. && make
 cd ../..
 
 cd src-6/builder/
-cmake ..
-make
+cmake .. && make
 cd ../..
 
 ls -altrh src-5/builder/ src-6/builder/
