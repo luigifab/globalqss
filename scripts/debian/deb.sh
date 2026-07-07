@@ -2,9 +2,9 @@
 # Debian: sudo apt install dpkg-dev devscripts build-essential dh-cmake cmake qtbase5-dev qt6-base-dev
 
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit 1
 export DH_QUIET=1
-version="1.1.0"
+version="1.2.0"
 
 
 mkdir -p builder
@@ -32,7 +32,7 @@ fi
 
 
 # create packages for Debian and Ubuntu and MX Linux
-for serie in experimental resolute questing noble jammy mx25 mx23; do
+for serie in experimental stonking resolute questing noble mx25 mx23 mx21; do
 
 	printf "\n\n#################################################################### $serie\n\n"
 	if [ $serie = "experimental" ]; then
@@ -52,17 +52,22 @@ for serie in experimental resolute questing noble jammy mx25 mx23; do
 
 	rm -rf debian/*/*ex debian/*ex debian/*EX debian/README* debian/*doc*
 	cp scripts/debian/* debian/
-	rm -f debian/deb.sh
+	rm -f debian/*.sh
 	mkdir debian/upstream ; mv debian/metadata debian/upstream/metadata
 
 
 
 	# debhelper: experimental:13 focal/mx21:12 bionic:9 xenial:9 trusty:9
-	if [ $serie = "experimental" ] || [ $serie = "unstable" ]; then
+	if [ $serie = "experimental" ]; then
+		mv debian/control.ubuntu debian/control # yes
+	elif [ $serie = "unstable" ]; then
 		mv debian/control.debian debian/control
-		#nano debian/control
+
 	elif [ $serie = "mx21" ]; then
+		mv debian/control.mxo debian/control
+		mv debian/rules.mxo debian/rules
 		sed -i 's/debhelper-compat (= 13)/debhelper-compat (= 12)/g' debian/control
+		sed -i 's/${DEB_HOST_MULTIARCH}/*/g' debian/qt5-style-globalqss.install # hack 1 binary
 	elif [ $serie = "focal" ]; then
 		mv debian/control.ubuntu debian/control
 		sed -i 's/debhelper-compat (= 13)/debhelper-compat (= 12)/g' debian/control
@@ -89,20 +94,32 @@ for serie in experimental resolute questing noble jammy mx25 mx23; do
 		mv debian/control.ubuntu debian/control
 	fi
 
-	if [ $serie = "mx25" ] || [ $serie = "mx23" ] || [ $serie = "mx21" ]; then
+	if [ $serie = "mx25" ] || [ $serie = "mx23" ]; then
 		mv debian/changelog.mx debian/changelog
 		sed -i 's/-1) /-1~'$serie'+1) /' debian/changelog
 		sed -i 's/ experimental; / mx; /' debian/changelog
 		sed -i 's/ unstable; / mx; /' debian/changelog
-	elif [ $serie = "experimental" ] || [ $serie = "unstable" ]; then
-		sed -i 's/ experimental; / '$serie'; /g' debian/changelog
+		rm debian/*qt7*
+	elif [ $serie = "mx21" ]; then
+		mv debian/changelog.mx debian/changelog
+		sed -i 's/-1) /-1~'$serie'+1) /' debian/changelog
+		sed -i 's/ experimental; / mx; /' debian/changelog
+		sed -i 's/ unstable; / mx; /' debian/changelog
+		rm debian/*qt6* debian/*qt7*
+	elif [ $serie = "experimental" ]; then
 		mv debian/changelog.debian debian/changelog
+		rm debian/*qt7*
+	elif [ $serie = "unstable" ]; then
+		mv debian/changelog.debian debian/changelog
+		sed -i 's/ experimental; / '$serie'; /g' debian/changelog
+		sed -i '/Priority:/d;/Rules-Requires-Root:/d' debian/control
+		rm debian/*qt7*
 	else
-		mv debian/changelog.ubuntu debian/changelog
 		sed -i 's/ experimental; / '$serie'; /g' debian/changelog
 		sed -i 's/-1) /-1+'$serie') /' debian/changelog
+		rm debian/*qt7*
 	fi
-	rm -f debian/*.mx debian/*.debian debian/*.ubuntu
+	rm -f debian/*.mx debian/*.mxo debian/*.debian debian/*.ubuntu
 
 	if [ $serie = "experimental" ]; then
 		echo "===================== build package ($serie) =="
@@ -113,6 +130,7 @@ for serie in experimental resolute questing noble jammy mx25 mx23; do
 	fi
 
 	echo "============== build source package ($serie) =="
+	rm -f debian/*.sh
 	dpkg-buildpackage -us -uc -ui -d -S
 	cd ..
 

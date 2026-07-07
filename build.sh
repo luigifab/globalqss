@@ -5,10 +5,12 @@
 
 rm -rf src-*/builder/
 
+mkdir src-5/builder
 cd src-5/builder/
 cmake .. && make
 cd ../..
 
+mkdir src-5/builder
 cd src-6/builder/
 cmake .. && make
 cd ../..

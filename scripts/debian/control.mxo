@@ -2,7 +2,7 @@ Source: qt-style-globalqss
 Section: x11
 Priority: optional
 Maintainer: Fabrice Creuzot <code@luigifab.fr>
-Build-Depends: debhelper-compat (= 13), cmake, qtbase5-dev (>= 5.10.0), qt6-base-dev
+Build-Depends: debhelper-compat (= 13), cmake, qtbase5-dev (>= 5.10.0)
 Rules-Requires-Root: no
 Standards-Version: 4.7.4
 Homepage: https://github.com/luigifab/awf-extended
@@ -22,17 +22,3 @@ Description: GlobalQSS style engine for Qt 5
  After installation you must restart your session.
  After uninstallation be sure to remove the config file:
   /etc/profile.d/qt5-style-globalqss.sh
-
-Package: qt6-style-globalqss
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: qt6-svg-plugins
-Description: GlobalQSS style engine for Qt 6
- This engine allows theming of Qt applications using QSS files,
- similar to how GTK applications are themed with CSS files.
- .
- This package provides the program for Qt 6.
- .
- After installation you must restart your session.
- After uninstallation be sure to remove the config file:
-  /etc/profile.d/qt6-style-globalqss.sh

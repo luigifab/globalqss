@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/30/04/2026
+ * Updated D/21/06/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -33,15 +33,19 @@ GlobalQSS::~GlobalQSS() {
 	qunsetenv("GQSS_SET");
 	qunsetenv("GQSS_READY");
 
-	if (gqss_monitor)
-		QDBusConnection::sessionBus().disconnect(
-			"ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify",
-			this, SLOT(onNotify(QString)));
+	#ifdef Q_OS_LINUX
+		if (gqss_monitor)
+			QDBusConnection::sessionBus().disconnect("ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify", this, SLOT(onNotify(QString)));
+	#endif
 }
 
-void GlobalQSS::onNotify(const QString &path) {
+bool GlobalQSS::event(QEvent *e) {
+	//qDebug() << "GQSS: event type:" << e->type();
+	// @see https://stackoverflow.com/q/79928058
+	return (e->type() == QEvent::MetaCall) ? QObject::event(e) : QProxyStyle::event(e);
+}
 
-	qDebug() << "GQSS: onNotify" << path;
+void GlobalQSS::onNotify(QString path) {
 
 	if (qApp && ((path == "/org/gnome/desktop/interface/gtk-theme") || (path == "/org/mate/desktop/interface/gtk-theme"))) {
 
@@ -73,60 +77,29 @@ void GlobalQSS::polish(QApplication *app) {
 	// @see https://github.com/loot/loot/issues/1896
 	// start monitoring of desktop theme change with dbus (disabled when application is started with GQSS_THEME=xyz)
 	// QDBusConnectionPrivate() got message (signal): QDBusMessage(type=Signal, service=":1.10", path="/ca/desrt/dconf/Writer/user", interface="ca.desrt.dconf.Writer", member="Notify", signature="sass", contents=("/org/mate/desktop/interface/gtk-theme", {""}, ":1.10:user:xyz") )
-	if (!gqss_monitor && !qEnvironmentVariableIsSet("GQSS_SET") && !qEnvironmentVariableIsSet("GQSS_THEME")) {
+	#ifdef Q_OS_LINUX
+		if (!gqss_monitor && !qEnvironmentVariableIsSet("GQSS_SET") && !qEnvironmentVariableIsSet("GQSS_THEME")) {
 
-		gqss_monitor = QDBusConnection::sessionBus().connect(
-			"ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify",
-			this, SLOT(onNotify(QString)));
+			gqss_monitor = QDBusConnection::sessionBus().connect("ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify", this, SLOT(onNotify(QString)));
 
-		if (qEnvironmentVariableIsSet("GQSS_DEBUG")) {
-			if (gqss_monitor)
-				qDebug() << "GQSS: monitor started";
-			else
-				qDebug() << "GQSS: monitor error" << QDBusConnection::sessionBus().lastError().message();
+			if (qEnvironmentVariableIsSet("GQSS_DEBUG")) {
+				if (gqss_monitor)
+					qDebug() << "GQSS: monitor started";
+				else
+					qDebug() << "GQSS: monitor error" << QDBusConnection::sessionBus().lastError().message();
+			}
 		}
-	}
+	#endif
 
 	qputenv("GQSS_SET", "yes");
 
-	// GQSS_THEME
+	// read theme from GQSS_THEME or from MATE or from GNOME
+	// for MATE/GNOME, if theme found, set GQSS_THEME
 	QString themeName = qEnvironmentVariable("GQSS_THEME").trimmed();
-
-	// MATE
-	// if found, set GQSS_THEME
-	if (themeName.isEmpty()) {
-
-		QProcess cmd1;
-		cmd1.start("gsettings", QStringList() << "get" << "org.mate.interface" << "gtk-theme");
-		cmd1.waitForFinished(200);
-		themeName = QString::fromUtf8(cmd1.readAllStandardOutput()).trimmed();
-		cmd1.close();
-
-		if (!themeName.isEmpty()) {
-			if (themeName.startsWith("'") && themeName.endsWith("'"))
-				themeName = themeName.mid(1, themeName.length() - 2);
-			if (!themeName.isEmpty())
-				qputenv("GQSS_THEME", themeName.toUtf8());
-		}
-	}
-
-	// GNOME
-	// if found, set GQSS_THEME
-	if (themeName.isEmpty()) {
-
-		QProcess cmd2;
-		cmd2.start("gsettings", QStringList() << "get" << "org.gnome.desktop.interface" << "gtk-theme");
-		cmd2.waitForFinished(200);
-		themeName = QString::fromUtf8(cmd2.readAllStandardOutput()).trimmed();
-		cmd2.close();
-
-		if (!themeName.isEmpty()) {
-			if (themeName.startsWith("'") && themeName.endsWith("'"))
-				themeName = themeName.mid(1, themeName.length() - 2);
-			if (!themeName.isEmpty())
-				qputenv("GQSS_THEME", themeName.toUtf8());
-		}
-	}
+	if (themeName.isEmpty())
+		themeName = readThemeName("org.mate.interface", "gtk-theme");
+	if (themeName.isEmpty())
+		themeName = readThemeName("org.gnome.desktop.interface", "gtk-theme");
 
 	// load and apply theme
 	// if found and applied, set GQSS_READY
@@ -135,8 +108,8 @@ void GlobalQSS::polish(QApplication *app) {
 		qunsetenv("GQSS_READY");
 	}
 	else {
+		QString css, qtVersion = QString::number(QT_VERSION_MAJOR);
 		bool found = (themeName == "None");
-		QString css, version = QString::number(QT_VERSION_MAJOR);
 
 		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 			qDebug() << "GQSS: theme" << themeName;
@@ -145,70 +118,59 @@ void GlobalQSS::polish(QApplication *app) {
 		if (!found) {
 
 			// load from theme files
-			for (const QString &path : {
-				QDir::homePath() + "/.themes/" + themeName + "/qt" + version,
-				"/usr/share/themes/" + themeName + "/qt" + version,
-				"/usr/local/share/themes/" + themeName + "/qt" + version
-			}) {
+			QStringList themePaths = {
+				QDir::homePath() + "/.themes/" + themeName + "/qt" + qtVersion,
+				QDir::homePath() + "/.local/share/themes/" + themeName + "/qt" + qtVersion,
+				"/usr/local/share/themes/" + themeName + "/qt" + qtVersion,
+				"/usr/share/themes/" + themeName + "/qt" + qtVersion,
+			};
 
-				QDir d(path);
+			#ifdef Q_OS_WIN
+				themePaths << QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/themes/" + themeName + "/qt" + qtVersion);
+			#endif
+
+			for (const QString &path : themePaths) {
+
+				QDir dir(path);
 				if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 					qDebug() << "GQSS:   dir" << path;
 
-				if (d.exists()) {
+				if (dir.exists()) {
 
-					d.setNameFilters(QStringList() << "*.qss");
-					d.setFilter(QDir::Files);
+					dir.setFilter(QDir::Files);
+					dir.setNameFilters(QStringList() << "*.qss");
 
-					QStringList files = d.entryList();
-					files.sort(Qt::CaseInsensitive);
-					for (const QString &fileName : files) {
+					QStringList files = dir.entryList();
+					if (!files.isEmpty()) {
 
-						QString filePath = d.absoluteFilePath(fileName);
-						QFile f(filePath);
+						std::sort(files.begin(), files.end(), [](const QString &a, const QString &b) {
+							return QString(a).replace('-', '~').compare(QString(b).replace('-', '~'), Qt::CaseInsensitive) < 0;
+						});
 
-						if (f.open(QFile::ReadOnly)) {
+						for (const QString &fileName : files)
+							css += readFile(app, dir, fileName);
 
-							if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
-								qDebug() << "GQSS:  file" << filePath;
-
-							css += QString::fromUtf8(f.readAll()).trimmed().replace("url(\"", "url(\"" + d.absolutePath() + "/") + "\n";
-							f.close();
-						}
-					}
-
-					found = true;
-					break;
-				}
-			}
-
-			// load from qt.qss
-			for (const QString &path : {
-				QDir::homePath() + "/.config/qt" + version
-			}) {
-
-				QDir d(path);
-				if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
-					qDebug() << "GQSS:   dir" << path;
-
-				if (d.exists()) {
-
-					QString filePath = d.absoluteFilePath("qt.qss");
-					QFile f(filePath);
-
-					if (f.open(QFile::ReadOnly)) {
-
-						if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
-							qDebug() << "GQSS:  file" << filePath;
-
-						css += QString::fromUtf8(f.readAll()).trimmed().replace("url(\"", "url(\"" + d.absolutePath() + "/") + "\n";
-						f.close();
+						found = true;
 						break;
 					}
 				}
 			}
 
-			css = css.trimmed();
+			// load from qt.qss
+			for (const QString &path : {
+				QDir::homePath() + "/.config/qt" + qtVersion
+			}) {
+
+				QDir dir(path);
+				if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
+					qDebug() << "GQSS:   dir" << path;
+
+				if (dir.exists()) {
+					css += readFile(app, dir, "qt.qss");
+					css += readFile(app, dir, "qt-rtl.qss");
+					break;
+				}
+			}
 		}
 
 		// apply QSS
@@ -220,10 +182,6 @@ void GlobalQSS::polish(QApplication *app) {
 			if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 				qDebug() << "GQSS: setStyleSheet";
 
-			// @todo
-			//for (QWidget *top : app->topLevelWidgets())
-			//	top->setProperty("textDirection", (app->layoutDirection() == Qt::RightToLeft) ? "rtl" : "ltr");
-
 			//app->setStyleSheet(css); // vlc = crash
 			if (QCoreApplication::applicationName().toLower().contains("vlc"))
 				QMetaObject::invokeMethod(app, "setStyleSheet", Qt::QueuedConnection, Q_ARG(QString, css));
@@ -234,4 +192,49 @@ void GlobalQSS::polish(QApplication *app) {
 			qunsetenv("GQSS_READY");
 		}
 	}
+
+	if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
+		qDebug() << "GQSS: (end)";
+}
+
+QString GlobalQSS::readThemeName(QString path, QString key) {
+
+	QString result;
+
+	#ifdef Q_OS_LINUX
+		QProcess cmd;
+
+		cmd.start("gsettings", QStringList() << "get" << path << key);
+		cmd.waitForFinished(200);
+		result = QString::fromUtf8(cmd.readAllStandardOutput()).trimmed();
+		cmd.close();
+
+		if (!result.isEmpty()) {
+			if (result.startsWith("'") && result.endsWith("'"))
+				result = result.mid(1, result.length() - 2);
+			if (!result.isEmpty())
+				qputenv("GQSS_THEME", result.toUtf8());
+		}
+	#endif
+
+	return result;
+}
+
+QString GlobalQSS::readFile(QApplication *app, QDir dir, QString name) {
+
+	QString result, path = dir.absoluteFilePath(name);
+	if (name.endsWith("-rtl.qss") && (app->layoutDirection() != Qt::RightToLeft))
+		return result;
+
+	QFile file(path);
+	if (file.open(QFile::ReadOnly)) {
+
+		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
+			qDebug() << "GQSS:  file" << path;
+
+		result = QString::fromUtf8(file.readAll()).trimmed().replace("url(\"", "url(\"" + dir.absolutePath() + "/") + "\n";
+		file.close();
+	}
+
+	return result;
 }

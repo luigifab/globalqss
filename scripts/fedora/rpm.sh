@@ -2,8 +2,8 @@
 # Fedora: sudo dnf install rpmdevtools rpm-sign cmake libqt5-qtbase-devel qt6-qtbase-devel aspell-fr enchant2-aspell
 # Fedora: configure: error: C compiler cannot create executables? remove and reinstall glibc-devel gcc
 
-cd "$(dirname "$0")"
-version="1.1.0"
+cd "$(dirname "$0")" || exit 1
+version="1.2.0"
 
 
 mkdir -p builder ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}

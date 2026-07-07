@@ -2,7 +2,7 @@
 %bcond qt6 1
 
 Name:          globalqss
-Version:       1.1.0
+Version:       1.2.0
 Release:       1%{?dist}
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
@@ -122,15 +122,15 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 %install
 %if %{with qt5}
  pushd build-qt5
- install -Dpm 644 ../data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt5-style-globalqss.sh
- install -Dpm 755 redhat-linux-build/libglobalqssplugin.so %{buildroot}%{_qt5_plugindir}/styles/libglobalqssplugin.so
+ %cmake_install
  popd
+ install -Dpm 644 data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt5-style-globalqss.sh
 %endif
 %if %{with qt6}
  pushd build-qt6
- install -Dpm 644 ../data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt6-style-globalqss.sh
- install -Dpm 755 redhat-linux-build/libglobalqssplugin.so %{buildroot}%{_qt6_plugindir}/styles/libglobalqssplugin.so
+ %cmake_install
  popd
+ install -Dpm 644 data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt6-style-globalqss.sh
 %endif
 
 %if %{with qt5}
@@ -152,6 +152,10 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 
 
 %changelog
+* Tue Jul 07 2026 Fabrice Creuzot <code@luigifab.fr> - 1.2.0-1
+- New upstream release
+- Use cmake install
+
 * Tue May 05 2026 Fabrice Creuzot <code@luigifab.fr> - 1.1.0-1
 - New upstream release
 

@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/30/04/2026
+ * Updated J/11/06/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -21,14 +21,16 @@
 #define GLOBALQSS_H
 
 #include <QApplication>
-#include <QDBusConnection>
-#include <QDBusError>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QProcess>
 #include <QProxyStyle>
 #include <QString>
+#ifdef Q_OS_LINUX
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QProcess>
+#endif
 
 class GlobalQSS : public QProxyStyle
 {
@@ -41,8 +43,12 @@ public:
 	~GlobalQSS();
 	void polish(QApplication *app) override;
 
+private:
+	QString readThemeName(QString path, QString key);
+	QString readFile(QApplication *app, QDir dir, QString name);
+
 private slots:
-	void onNotify(const QString &path);
+	void onNotify(QString path);
 };
 
 #endif

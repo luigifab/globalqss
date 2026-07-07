@@ -6,42 +6,39 @@ It finds the theme name from the environment variable `GQSS_THEME`, or from MATE
 
 ## Tips
 
-Like CSS for GTK isn't CSS, QSS for Qt isn't CSS, [read the docs](https://doc.qt.io/qt-6/stylesheet-reference.html).
+Just as CSS for GTK isn't really CSS, QSS for Qt isn't really CSS either, and it supports even fewer features, [read the docs](https://doc.qt.io/qt-6/stylesheet-reference.html).
 
 - Use `image: url("img/menu-checkbox-checked.svg");` for theme images
 - Use `image: url('/usr/share/icons/Adwaita/symbolic/ui/pan-down-symbolic.svg');` for system images
 
 For an example, see [awf-qt](https://github.com/luigifab/awf-extended) and [human-theme](https://github.com/luigifab/human-theme).
 
+## RTL
+
+Use `*-rtl.qss` for file names.
+
+Starting from version 1.2.0 rtl files are loaded after the non-rtl files only when the Qt application is running in right-to-left mode. Previously, these files were always loaded but in reverse order, so if both files define the same property (for example `QWidget { margin }`), the non-rtl file overrides and the theme is ok.
+
 ## Installation
 
-It requires **Qt 5.15** or **Qt 6.0+** *(including 6.11)*.
+It requires **Qt 5.10+** *(including 5.15)* or **Qt 6.0+** *(including 6.11)*.
 
-#### Installation for Debian, Devuan, Ubuntu, Trisquel, Linux Mint, MX Linux
+> The road is long, but the way is free — we always have a choice.
+
+#### Install via package manager
 
 * `sudo apt install qt5-style-globalqss qt6-style-globalqss`
-
-#### Installation for Fedora
-
 * `sudo dnf install qt5-globalqss qt6-globalqss`
 
-#### Installation for openSUSE
+Replace `apt`/`dnf` with your package manager, or use a graphical interface.
 
-* `sudo zypper install qt5-globalqss qt6-globalqss`
-
-#### Installation for Mageia
-
-* `sudo urpmi qt5-globalqss qt6-globalqss`
-
-#### Building from source
+#### Build from source
 
 * To compile with Qt 5 & 6 run: `build.sh`
 * To compile and create DEB packages for Debian & Ubuntu run: `scripts/debian/deb.sh`
 * To compile and create RPM packages for Fedora run: `scripts/fedora/rpm.sh`
-* To compile and create RPM packages for Mageia run: `scripts/mageia/rpm.sh`
-* To compile and create RPM packages for openSUSE run: `scripts/opensuse/rpm.sh`
 
-#### Alternative installation for Debian, Devuan, Ubuntu, Trisquel, Linux Mint, MX Linux
+#### Install via PPA
 
 ```bash
 # PPA: https://launchpad.net/~luigifab/+archive/ubuntu/packages
@@ -85,8 +82,6 @@ pub   rsa4096 2020-10-31 [SC]
 
 ## Known issues & Dev
 
-Sometimes, `Segmentation fault` can appear.
-
 You can set `GQSS_DEBUG=1` from command line to enable debug mode.\
 When the plugin has applied the theme, `GQSS_READY=yes` is set.
 
@@ -111,15 +106,13 @@ The customize interface dialog can crash the program.
 
 Stay on version 3.1.1 to use the system theme.
 
+Don't forget to add `::1 openshot.org www.openshot.org` in _/etc/hosts_ to disable the OpenShot mouchard.
+
 ## Copyright
 
-- Current version: 1.1.0 (05/05/2026)
-- Compatibility: Qt 5.15 / 6.0..6.11
+- Current version: 1.2.0 (07/07/2026)
+- Compatibility: Qt 5.10..5.15 / 6.0..6.11
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 
 This program is provided under the terms of the **GNU GPLv2+** license.\
 If you like, take some of your time to improve the translations, go to https://bit.ly/2HyCCEc.
-
-## Packages in official distros repositories
-
-[![Packages status](https://repology.org/badge/vertical-allrepos/globalqss.svg?header=globalqss)](https://repology.org/project/globalqss/versions)

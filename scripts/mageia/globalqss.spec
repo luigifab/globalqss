@@ -2,12 +2,12 @@
 %bcond qt6 1
 
 Name:          globalqss
-Version:       1.1.0
+Version:       1.2.0
 Release:       %mkrel 1
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
 License:       GPLv2+
-Group:         Todo
+Group:         System/Libraries
 URL:           https://github.com/luigifab/globalqss
 Source0:       %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
@@ -17,12 +17,12 @@ BuildRequires: gcc-c++
 %if %{with qt5}
 BuildRequires: qt5-devel
 Requires:      qt5
-Recommends:    qt5-svg
+Recommends:    qtsvg5
 %endif
 %if %{with qt6}
 BuildRequires: qt6-devel
 Requires:      qt6
-Recommends:    qt6-svg
+Recommends:    qtsvg6
 %endif
 
 %if %{with qt5}
@@ -122,15 +122,15 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 %install
 %if %{with qt5}
  pushd build-qt5
- install -Dpm 644 ../data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt5-style-globalqss.sh
- install -Dpm 755 build/libglobalqssplugin.so %{buildroot}%{_libdir}/qt5/plugins/styles/libglobalqssplugin.so
+ %cmake_install
  popd
+ install -Dpm 644 data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt5-style-globalqss.sh
 %endif
 %if %{with qt6}
  pushd build-qt6
- install -Dpm 644 ../data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt6-style-globalqss.sh
- install -Dpm 755 build/libglobalqssplugin.so %{buildroot}%{_libdir}/qt6/plugins/styles/libglobalqssplugin.so
+ %cmake_install
  popd
+ install -Dpm 644 data/profile.sh %{buildroot}%{_sysconfdir}/profile.d/qt6-style-globalqss.sh
 %endif
 
 %if %{with qt5}
@@ -152,6 +152,10 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 
 
 %changelog
+* Tue Jul 07 2026 Fabrice Creuzot <code@luigifab.fr> - 1.2.0-1.mga
+- New upstream release
+- Use cmake install
+
 * Tue May 05 2026 Fabrice Creuzot <code@luigifab.fr> - 1.1.0-1.mga
 - New upstream release
 

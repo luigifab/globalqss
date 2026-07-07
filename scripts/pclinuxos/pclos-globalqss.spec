@@ -3,10 +3,11 @@
 
 Name:          globalqss
 Version:       1.2.0
-Release:       0
+Release:       %mkrel 1
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
-License:       GPL-2.0-or-later
+License:       GPLv2+
+Group:         System/Libraries
 URL:           https://github.com/luigifab/globalqss
 Source0:       %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
@@ -14,15 +15,14 @@ BuildRequires: aspell-fr
 BuildRequires: cmake
 BuildRequires: gcc-c++
 %if %{with qt5}
-BuildRequires: libqt5-qtbase-devel
-BuildRequires: libqt5-qtstyleplugins-devel
-Requires:      libqt5-qtbase
-Recommends:    libqt5-qtsvg
+BuildRequires: qt5-devel
+Requires:      qt5
+Recommends:    qtsvg5
 %endif
 %if %{with qt6}
-BuildRequires: qt6-base-devel
-Requires:      qt6-base
-Recommends:    qt6-svg
+BuildRequires: qt6-devel
+Requires:      qt6
+Recommends:    qtsvg6
 %endif
 
 %if %{with qt5}
@@ -108,13 +108,13 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 %build
 %if %{with qt5}
  mkdir build-qt5 && pushd build-qt5
- %cmake -S ../../src-5/
+ %cmake -S ../src-5/
  %cmake_build
  popd
 %endif
 %if %{with qt6}
  mkdir build-qt6 && pushd build-qt6
- %cmake -S ../../src-6/
+ %cmake -S ../src-6/
  %cmake_build
  popd
 %endif
@@ -138,7 +138,7 @@ Après la désinstallation, veillez à supprimer le fichier de config :
  %config(noreplace) %{_sysconfdir}/profile.d/qt5-style-globalqss.sh
  %license LICENSE
  %doc README.md
- %attr(644,root,root) %{_libqt5_libdir}/qt5/plugins/styles/libglobalqssplugin.so
+ %attr(644,root,root) %{_libdir}/qt5/plugins/styles/libglobalqssplugin.so
 %endif
 
 %if %{with qt6}
@@ -146,18 +146,18 @@ Après la désinstallation, veillez à supprimer le fichier de config :
  %config(noreplace) %{_sysconfdir}/profile.d/qt6-style-globalqss.sh
  %license LICENSE
  %doc README.md
- %dir %{_libdir}/qt6/plugins/styles
  %attr(644,root,root) %{_libdir}/qt6/plugins/styles/libglobalqssplugin.so
 %endif
 
 
+
 %changelog
-* Tue Jul 07 2026 Fabrice Creuzot <code@luigifab.fr> - 1.2.0-1
+* Tue Jul 07 2026 Fabrice Creuzot <code@luigifab.fr> - 1.2.0-1pclos2026
 - New upstream release
 - Use cmake install
 
-* Tue May 05 2026 Fabrice Creuzot <code@luigifab.fr> - 1.1.0-1
-- New upstream release
+* Tue May 05 2026 Fabrice Creuzot <code@luigifab.fr> - 1.1.0-1pclos2026
+- Initial PCLinuxOS package release
 
-* Tue Mar 03 2026 Fabrice Creuzot <code@luigifab.fr> - 1.0.0-1
-- Initial openSUSE package release
+
+

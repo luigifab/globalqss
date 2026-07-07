@@ -11,7 +11,8 @@
 # where [themeName] is GQSS_THEME=xyz or current MATE GTK theme or current GNOME GTK theme
 #
 # You can override with:
-#      ~/.config/qt5/qt.qss + ~/.config/qt6/qt.qss
+#      ~/.config/qt5/qt.qss     + ~/.config/qt6/qt.qss
+#      ~/.config/qt5/qt-rtl.qss + ~/.config/qt6/qt-rtl.qss
 #
 # export GQSS_THEME=xyz
 # export GQSS_DEBUG=1
