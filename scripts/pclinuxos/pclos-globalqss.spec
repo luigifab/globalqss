@@ -2,7 +2,7 @@
 %bcond qt6 1
 
 Name:          globalqss
-Version:       1.2.0
+Version:       1.3.0
 Release:       %mkrel 1
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
@@ -152,6 +152,9 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 
 
 %changelog
+* Fri Jan 01 2027 Fabrice Creuzot <code@luigifab.fr> - 1.3.0-1pclos2027
+- New upstream release
+
 * Tue Jul 07 2026 Fabrice Creuzot <code@luigifab.fr> - 1.2.0-1pclos2026
 - New upstream release
 - Use cmake install

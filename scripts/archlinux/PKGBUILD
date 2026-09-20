@@ -1,6 +1,6 @@
 pkgbase=qt-style-globalqss
 pkgname=('qt5-style-globalqss' 'qt6-style-globalqss')
-pkgver=1.2.0
+pkgver=1.3.0
 pkgrel=1
 pkgdesc='GlobalQSS style engine for Qt'
 url='https://github.com/luigifab/globalqss'

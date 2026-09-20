@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated D/21/06/2026
+ * Updated D/20/09/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -72,7 +72,7 @@ void GlobalQSS::polish(QApplication *app) {
 	// start monitoring of desktop theme change with dbus (disabled when application is started with GQSS_THEME=xyz)
 	// QDBusConnectionPrivate() got message (signal): QDBusMessage(type=Signal, service=":1.10", path="/ca/desrt/dconf/Writer/user", interface="ca.desrt.dconf.Writer", member="Notify", signature="sass", contents=("/org/mate/desktop/interface/gtk-theme", {""}, ":1.10:user:xyz") )
 	#ifdef Q_OS_LINUX
-		if (!gqss_monitor && !qEnvironmentVariableIsSet("GQSS_SET") && !qEnvironmentVariableIsSet("GQSS_THEME")) {
+		if (!gqss_monitor && !qEnvironmentVariableIsSet("GQSS_SET") && !qEnvironmentVariableIsSet("GQSS_THEME") && (geteuid() != 0)) {
 
 			gqss_monitor = QDBusConnection::sessionBus().connect("ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify", this, SLOT(onNotify(QString)));
 
@@ -94,6 +94,8 @@ void GlobalQSS::polish(QApplication *app) {
 		themeName = readThemeName("org.mate.interface", "gtk-theme");
 	if (themeName.isEmpty())
 		themeName = readThemeName("org.gnome.desktop.interface", "gtk-theme");
+	if ((themeName == ".") || (themeName == "..") || themeName.contains('/') || themeName.contains('\\'))
+		themeName.clear();
 
 	// load and apply theme
 	// if found and applied, set GQSS_READY
@@ -108,21 +110,27 @@ void GlobalQSS::polish(QApplication *app) {
 		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 			qDebug() << "GQSS: theme" << themeName;
 
-		// do nothing (None theme) or load theme (theme files and qt.qss)
+		// do nothing (None theme) or load theme (theme files *.qss and qt.qss)
 		if (!found) {
 
-			// load from theme files
-			QStringList themePaths = {
-				QDir::homePath() + "/.themes/" + themeName + "/qt" + qtVersion,
-				QDir::homePath() + "/.local/share/themes/" + themeName + "/qt" + qtVersion,
-				"/usr/local/share/themes/" + themeName + "/qt" + qtVersion,
-				"/usr/share/themes/" + themeName + "/qt" + qtVersion,
-			};
+			QStringList themePaths;
+			QString userDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+
+			// list available user themes (<home>/.local/share/themes && <home>/.themes)
+			themePaths << QDir(userDir).filePath("themes/" + themeName + "/qt" + qtVersion);
+			themePaths << QDir::home().filePath(".themes/" + themeName + "/qt" + qtVersion);
+
+			// list available system themes (/usr/local/share/themes && /usr/share/themes)
+			for (QString dir : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)) {
+				if (dir != userDir)
+					themePaths << QDir(dir).filePath("themes/" + themeName + "/qt" + qtVersion);
+			}
 
 			#ifdef Q_OS_WIN
 				themePaths << QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/themes/" + themeName + "/qt" + qtVersion);
 			#endif
 
+			// load from theme files
 			for (const QString &path : themePaths) {
 
 				QDir dir(path);
@@ -196,20 +204,59 @@ QString GlobalQSS::readThemeName(QString path, QString key) {
 	QString result;
 
 	#ifdef Q_OS_LINUX
-		QProcess cmd;
-
-		cmd.start("gsettings", QStringList() << "get" << path << key);
-		cmd.waitForFinished(200);
-		result = QString::fromUtf8(cmd.readAllStandardOutput()).trimmed();
-		cmd.close();
-
-		if (!result.isEmpty()) {
-			if (result.startsWith("'") && result.endsWith("'"))
-				result = result.mid(1, result.length() - 2);
-			if (!result.isEmpty())
-				qputenv("GQSS_THEME", result.toUtf8());
+		// root user
+		if (geteuid() == 0) {
+			bool ok = false;
+			uid_t uid = (uid_t)-1;
+			QFile f("/proc/self/loginuid");
+			if (f.open(QFile::ReadOnly)) {
+				uid = f.readAll().trimmed().toUInt(&ok);
+				f.close();
+			}
+			if (ok && (uid != 0) && (uid != (uid_t)-1)) {
+				struct passwd *pw = getpwuid(uid);
+				if (pw && pw->pw_dir) {
+					QProcessEnvironment env;
+					env.insert("HOME", QString::fromUtf8(pw->pw_dir));
+					env.insert("XDG_DATA_DIRS", qEnvironmentVariable("XDG_DATA_DIRS"));
+					QProcess cmd;
+					cmd.setProcessEnvironment(env);
+					cmd.start("/usr/bin/setpriv", QStringList()
+						<< ("--reuid=" + QString::number(uid))
+						<< ("--regid=" + QString::number(pw->pw_gid))
+						<< "--clear-groups"
+						<< "--no-new-privs"
+						<< "/usr/bin/gsettings" << "get" << path << key);
+					cmd.waitForFinished(200);
+					result = QString::fromUtf8(cmd.readAllStandardOutput()).trimmed();
+					cmd.close();
+				}
+				else {
+					return result;
+				}
+			}
+			else {
+				return result;
+			}
+		}
+		// normal user
+		else {
+			QProcess cmd;
+			cmd.start("gsettings", QStringList() << "get" << path << key);
+			cmd.waitForFinished(200);
+			result = QString::fromUtf8(cmd.readAllStandardOutput()).trimmed();
+			cmd.close();
 		}
 	#endif
+
+	if (!result.isEmpty()) {
+		if (result.startsWith("'") && result.endsWith("'"))
+			result = result.mid(1, result.length() - 2);
+		if ((result == ".") || (result == "..") || result.contains('/') || result.contains('\\'))
+			result.clear();
+		if (!result.isEmpty())
+			qputenv("GQSS_THEME", result.toUtf8());
+	}
 
 	return result;
 }

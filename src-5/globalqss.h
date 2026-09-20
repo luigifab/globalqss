@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/11/06/2026
+ * Updated S/19/09/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -25,11 +25,15 @@
 #include <QDir>
 #include <QFile>
 #include <QProxyStyle>
+#include <QStandardPaths>
 #include <QString>
 #ifdef Q_OS_LINUX
 #include <QDBusConnection>
 #include <QDBusError>
 #include <QProcess>
+#include <QProcessEnvironment>
+#include <pwd.h>
+#include <unistd.h>
 #endif
 
 class GlobalQSS : public QProxyStyle

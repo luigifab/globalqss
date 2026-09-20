@@ -1,3 +1,5 @@
+-- NIGHTLY --
+
 # Global QSS
 
 This engine allows theming of Qt applications using QSS files, similar to how GTK applications are themed with CSS files.
@@ -5,6 +7,17 @@ This engine allows theming of Qt applications using QSS files, similar to how GT
 It finds the theme name from the environment variable `GQSS_THEME`, or from MATE settings, or from GNOME settings. It supports theme reload on desktop theme change (via DBus).
 
 ## Tips
+
+Standard theme files are:
+```
+.themes/<example>/qt5/qt.qss
+.themes/<example>/qt5/qt-rtl.qss
+.themes/<example>/qt5/*.qss
+...
+.themes/<example>/qt6/qt.qss
+.themes/<example>/qt6/qt-rtl.qss
+.themes/<example>/qt6/*.qss
+```
 
 Just as CSS for GTK isn't really CSS, QSS for Qt isn't really CSS either, and it supports even fewer features, [read the docs](https://doc.qt.io/qt-6/stylesheet-reference.html).
 
@@ -41,17 +54,7 @@ Replace `apt`/`dnf` with your package manager, or use a graphical interface.
 #### Install via PPA
 
 ```bash
-# PPA: https://launchpad.net/~luigifab/+archive/ubuntu/packages
-# from Debian 12 you can use noble/questing (unix.stackexchange.com/a/669008/364800)
-#     Debian: focal for 10/buster, jammy for 11/bullseye, noble for 12/bookworm,
-#              plucky for 13/trixie, questing for 14/forky and 15/duke
-#     Devuan: focal for 3/beowulf, jammy for 4/chimaera, noble for 5/daedalus,
-#              plucky for 6/excalibur, questing for 7/freia and 8/gryphon and ceres
-# Linux Mint: focal for 20.x and 4/debbie, jammy for 21.x and 5/elsie,
-#              noble for 22.x and 6/faye, plucky for 7/gigi
-#   MX Linux: focal for 19.x, jammy for 21.x, noble for 23.x, questing for 25.x
-#   Trisquel: focal for nabia, jammy for aramo
-# Kali Linux: questing
+# https://launchpad.net/~luigifab/+archive/ubuntu/packages
 
 sudo add-apt-repository ppa:luigifab/packages
 sudo apt update
@@ -110,7 +113,7 @@ Don't forget to add `::1 openshot.org www.openshot.org` in _/etc/hosts_ to disab
 
 ## Copyright
 
-- Current version: 1.2.0 (07/07/2026)
+- Current version: 1.3.0~20260920
 - Compatibility: Qt 5.10..5.15 / 6.0..6.11
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 
