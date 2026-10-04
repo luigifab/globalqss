@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated D/20/09/2026
+ * Updated D/04/10/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -19,19 +19,24 @@
 
 #include "globalqss.h"
 
-// can be defined from command line: GQSS_DEBUG GQSS_THEME
-//      can be defined from program: GQSS_THEME GQSS_RELOAD
-//      can be checked from program: GQSS_SET=yes (plugin loaded) / GQSS_READY=yes (plugin loaded and theme applied) / GQSS_THEME (theme name)
-//                                   GQSS_SIGNAL=yes (on desktop theme change)
+// read only environment variables, can be defined from command line: GQSS_DEBUG GQSS_THEME
 //
-//   engine is loaded without theme: GQSS_SET="yes" + GQSS_THEME=""
-// engine is loaded with None theme: GQSS_SET="yes" + GQSS_READY="yes" + GQSS_THEME="None" (empty style sheet)
-//      engine is loaded with theme: GQSS_SET="yes" + GQSS_READY="yes" + GQSS_THEME="abc"  (theme files and qt.qss)
+// qApp properties
+//  can be defined from program: GQSS_THEME GQSS_RELOAD
+//  can be checked from program: GQSS_SET=true (plugin loaded) / GQSS_READY=true (plugin loaded and theme applied) / GQSS_THEME (theme name)
+//                               GQSS_SIGNAL=true (on desktop theme change)
+//
+//   engine is loaded without theme: GQSS_SET=true + GQSS_THEME=""
+// engine is loaded with stylesheet: GQSS_SET=true + GQSS_THEME="-stylesheet"
+// engine is loaded with None theme: GQSS_SET=true + GQSS_READY=true + GQSS_THEME="None" (empty style sheet)
+//      engine is loaded with theme: GQSS_SET=true + GQSS_READY=true + GQSS_THEME="abc"  (theme files and qt.qss)
 
 GlobalQSS::~GlobalQSS() {
 
-	qunsetenv("GQSS_SET");
-	qunsetenv("GQSS_READY");
+	if (qApp && !QCoreApplication::closingDown()) {
+		qApp->setProperty("GQSS_SET", QVariant());
+		qApp->setProperty("GQSS_READY", QVariant());
+	}
 
 	#ifdef Q_OS_LINUX
 		if (gqss_monitor)
@@ -46,20 +51,21 @@ void GlobalQSS::onNotify(QString path) {
 		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 			qDebug() << "GQSS: themeChanged";
 
-		qunsetenv("GQSS_THEME");
-		qputenv("GQSS_SIGNAL", "yes");
+		qApp->setProperty("GQSS_THEME", QVariant());
+		qApp->setProperty("GQSS_SIGNAL", true);
 
 		gqss_applied = false;
 		polish(qApp); // apply theme
 
-		qunsetenv("GQSS_SIGNAL");
+		qApp->setProperty("GQSS_SIGNAL", QVariant());
 	}
 }
 
 void GlobalQSS::polish(QApplication *app) {
 
-	if (qEnvironmentVariableIsSet("GQSS_RELOAD")) {
-		qunsetenv("GQSS_RELOAD");
+	bool reload = app->property("GQSS_RELOAD").toBool();
+	if (reload) {
+		app->setProperty("GQSS_RELOAD", QVariant());
 		gqss_applied = false;
 		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 			qDebug() << "GQSS: reload";
@@ -72,7 +78,7 @@ void GlobalQSS::polish(QApplication *app) {
 	// start monitoring of desktop theme change with dbus (disabled when application is started with GQSS_THEME=xyz)
 	// QDBusConnectionPrivate() got message (signal): QDBusMessage(type=Signal, service=":1.10", path="/ca/desrt/dconf/Writer/user", interface="ca.desrt.dconf.Writer", member="Notify", signature="sass", contents=("/org/mate/desktop/interface/gtk-theme", {""}, ":1.10:user:xyz") )
 	#ifdef Q_OS_LINUX
-		if (!gqss_monitor && !qEnvironmentVariableIsSet("GQSS_SET") && !qEnvironmentVariableIsSet("GQSS_THEME") && (geteuid() != 0)) {
+		if (!gqss_monitor && !app->property("GQSS_SET").toBool() && !qEnvironmentVariableIsSet("GQSS_THEME") && (geteuid() != 0)) {
 
 			gqss_monitor = QDBusConnection::sessionBus().connect("ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify", this, SLOT(onNotify(QString)));
 
@@ -85,23 +91,55 @@ void GlobalQSS::polish(QApplication *app) {
 		}
 	#endif
 
-	qputenv("GQSS_SET", "yes");
+	app->setProperty("GQSS_SET", true);
+
+	// do not apply theme when -stylesheet is used
+	if (!reload && app->styleSheet().startsWith("file:///")) {
+		QFileInfo sheetFile(app->styleSheet().mid(8));
+		if (sheetFile.isFile() && sheetFile.isReadable()) {
+			app->setProperty("GQSS_THEME", "-stylesheet");
+			app->setProperty("GQSS_READY", QVariant());
+			original_sheet = app->styleSheet();
+			if (qEnvironmentVariableIsSet("GQSS_DEBUG")) {
+				qDebug() << "GQSS: -stylesheet" << original_sheet;
+				qDebug() << "GQSS: (end)";
+			}
+			return;
+		}
+	}
 
 	// read theme from GQSS_THEME or from MATE or from GNOME
-	// for MATE/GNOME, if theme found, set GQSS_THEME
-	QString themeName = qEnvironmentVariable("GQSS_THEME").trimmed();
+	// if theme found, set GQSS_THEME
+	QString themeName = app->property("GQSS_THEME").toString().trimmed();
+	if (themeName.isEmpty())
+		themeName = qEnvironmentVariable("GQSS_THEME").trimmed();
 	if (themeName.isEmpty())
 		themeName = readThemeName("org.mate.interface", "gtk-theme");
 	if (themeName.isEmpty())
 		themeName = readThemeName("org.gnome.desktop.interface", "gtk-theme");
 	if ((themeName == ".") || (themeName == "..") || themeName.contains('/') || themeName.contains('\\'))
 		themeName.clear();
+	if (!themeName.isEmpty())
+		app->setProperty("GQSS_THEME", themeName);
 
 	// load and apply theme
 	// if found and applied, set GQSS_READY
 	// else, unset GQSS_READY
 	if (themeName.isEmpty()) {
-		qunsetenv("GQSS_READY");
+		app->setProperty("GQSS_READY", QVariant());
+	}
+	else if (themeName == "-stylesheet") {
+
+		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
+			qDebug() << "GQSS: setStyleSheet";
+
+		//app->setStyleSheet(css); // vlc = crash
+		if (QCoreApplication::applicationName().toLower().contains("vlc"))
+			QMetaObject::invokeMethod(app, "setStyleSheet", Qt::QueuedConnection, Q_ARG(QString, original_sheet));
+		else
+			QMetaObject::invokeMethod(app, "setStyleSheet", Qt::DirectConnection, Q_ARG(QString, original_sheet));
+
+		app->setProperty("GQSS_READY", QVariant());
 	}
 	else {
 		QString css, qtVersion = QString::number(QT_VERSION_MAJOR);
@@ -160,7 +198,7 @@ void GlobalQSS::polish(QApplication *app) {
 
 			// load from qt.qss
 			for (const QString &path : {
-				QDir::homePath() + "/.config/qt" + qtVersion
+				QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/qt" + qtVersion
 			}) {
 
 				QDir dir(path);
@@ -180,7 +218,7 @@ void GlobalQSS::polish(QApplication *app) {
 
 			gqss_applied = true;
 
-			qputenv("GQSS_READY", "yes");
+			app->setProperty("GQSS_READY", true);
 			if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 				qDebug() << "GQSS: setStyleSheet";
 
@@ -191,7 +229,7 @@ void GlobalQSS::polish(QApplication *app) {
 				QMetaObject::invokeMethod(app, "setStyleSheet", Qt::DirectConnection, Q_ARG(QString, css));
 		}
 		else {
-			qunsetenv("GQSS_READY");
+			app->setProperty("GQSS_READY", QVariant());
 		}
 	}
 
@@ -254,8 +292,6 @@ QString GlobalQSS::readThemeName(QString path, QString key) {
 			result = result.mid(1, result.length() - 2);
 		if ((result == ".") || (result == "..") || result.contains('/') || result.contains('\\'))
 			result.clear();
-		if (!result.isEmpty())
-			qputenv("GQSS_THEME", result.toUtf8());
 	}
 
 	return result;

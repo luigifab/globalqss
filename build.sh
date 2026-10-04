@@ -3,6 +3,7 @@
 # Fedora: sudo dnf install cmake qt5-qtbase-devel qt6-qtbase-devel
 # openSUSE: sudo zypper install cmake libqt5-qtbase-devel qt6-base-devel
 
+cd "$(dirname "$0")" || exit 1
 rm -rf src-*/builder/
 
 mkdir src-5/builder

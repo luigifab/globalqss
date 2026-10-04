@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated S/19/09/2026
+ * Updated M/29/09/2026
  *
  * Copyright 2025-2026 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -41,6 +41,7 @@ class GlobalQSS : public QProxyStyle
 	Q_OBJECT
 	bool gqss_monitor = false;
 	bool gqss_applied = false;
+	QString original_sheet;
 
 public:
 	GlobalQSS() = default;

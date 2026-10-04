@@ -35,7 +35,6 @@ execute_process(
 )
 message(STATUS "Qt6 plugins dir: ${QT6_PLUGINS_DIR}")
 
-include(GNUInstallDirs)
 install(TARGETS globalqssplugin
 	LIBRARY DESTINATION ${QT6_PLUGINS_DIR}/styles
 )

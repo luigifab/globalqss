@@ -5,9 +5,9 @@ Maintainer: Fabrice Creuzot <code@luigifab.fr>
 Build-Depends: debhelper-compat (= 14), cmake, qtbase5-dev (>= 5.10.0), qt6-base-dev
 Rules-Requires-Root: no
 Standards-Version: 4.7.4
-Homepage: https://github.com/luigifab/awf-extended
-Vcs-Browser: https://github.com/luigifab/awf-extended
-Vcs-Git: https://github.com/luigifab/awf-extended.git
+Homepage: https://github.com/luigifab/globalqss
+Vcs-Browser: https://github.com/luigifab/globalqss
+Vcs-Git: https://github.com/luigifab/globalqss.git
 
 Package: qt5-style-globalqss
 Architecture: any
@@ -26,7 +26,7 @@ Description: GlobalQSS style engine for Qt 5
 Package: qt6-style-globalqss
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: qt6-svg-plugins
+Recommends: qt6-svg-plugins | libqt6svg6
 Description: GlobalQSS style engine for Qt 6
  This engine allows theming of Qt applications using QSS files,
  similar to how GTK applications are themed with CSS files.

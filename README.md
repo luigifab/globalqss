@@ -4,7 +4,7 @@
 
 This engine allows theming of Qt applications using QSS files, similar to how GTK applications are themed with CSS files.
 
-It finds the theme name from the environment variable `GQSS_THEME`, or from MATE settings, or from GNOME settings. It supports theme reload on desktop theme change (via DBus).
+It finds the theme name from the environment variable `GQSS_THEME`, or from MATE settings, or from GNOME settings. It supports theme reload on desktop theme change (via DBus). It does nothing when -stylesheet is used.
 
 ## Tips
 
@@ -30,7 +30,7 @@ For an example, see [awf-qt](https://github.com/luigifab/awf-extended) and [huma
 
 Use `*-rtl.qss` for file names.
 
-Starting from version 1.2.0 rtl files are loaded after the non-rtl files only when the Qt application is running in right-to-left mode. Previously, these files were always loaded but in reverse order, so if both files define the same property (for example `QWidget { margin }`), the non-rtl file overrides and the theme is ok.
+Starting from version 1.2.0, RTL files are loaded after the non-rtl files only when the Qt application is running in right-to-left mode. Previously, these files were always loaded but in reverse order, so if both files define the same property (for example `QWidget { margin }`), the non-rtl file overrides and the theme is ok.
 
 ## Installation
 
@@ -86,13 +86,13 @@ pub   rsa4096 2020-10-31 [SC]
 ## Known issues & Dev
 
 You can set `GQSS_DEBUG=1` from command line to enable debug mode.\
-When the plugin has applied the theme, `GQSS_READY=yes` is set.
+When the plugin has applied the theme, the `GQSS_READY` property of `qApp` is `true`.
 
 From any program, you can reload the theme with:
 ```c++
-	if (qEnvironmentVariableIsSet("GQSS_SET")) {
-		//qputenv("GQSS_THEME", "[newThemeName]");
-		qputenv("GQSS_RELOAD", "yes");
+	if (qApp->property("GQSS_SET").toBool()) {
+		//qApp->setProperty("GQSS_THEME", "[newThemeName]");
+		qApp->setProperty("GQSS_RELOAD", true);
 		QApplication::style()->polish(qApp);
 		QApplication::processEvents();
 		window->adjustSize();
@@ -113,7 +113,7 @@ Don't forget to add `::1 openshot.org www.openshot.org` in _/etc/hosts_ to disab
 
 ## Copyright
 
-- Current version: 1.3.0~20260920
+- Current version: 2.0.0~nightly20261004
 - Compatibility: Qt 5.10..5.15 / 6.0..6.11
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 

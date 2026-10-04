@@ -2,7 +2,7 @@
 %bcond qt6 1
 
 Name:          globalqss
-Version:       1.3.0
+Version:       2.0.0
 Release:       0
 Summary:       GlobalQSS style engine for Qt
 Summary(fr):   Moteur de style GlobalQSS pour Qt
@@ -16,23 +16,23 @@ BuildRequires: gcc-c++
 %if %{with qt5}
 BuildRequires: libqt5-qtbase-devel
 BuildRequires: libqt5-qtstyleplugins-devel
-Requires:      libQt5Core5
-Recommends:    libQt5Svg5
 %endif
 %if %{with qt6}
 BuildRequires: qt6-base-devel
-Requires:      libQt6Core6
-Recommends:    libQt6Svg6
 %endif
 
 %if %{with qt5}
 %package -n qt5-globalqss
+Requires:      libQt5Core5
+Recommends:    libQt5Svg5
 Summary:       GlobalQSS style engine for Qt 5
 Summary(fr):   Moteur de style GlobalQSS pour Qt 5
 %endif
 
 %if %{with qt6}
 %package -n qt6-globalqss
+Requires:      libQt6Core6
+Recommends:    libQt6Svg6
 Summary:       GlobalQSS style engine for Qt 6
 Summary(fr):   Moteur de style GlobalQSS pour Qt 6
 %endif
@@ -152,7 +152,7 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 
 
 %changelog
-* Fri Jan 01 2027 Fabrice Creuzot <code@luigifab.fr> - 1.3.0-1
+* Fri Jan 01 2027 Fabrice Creuzot <code@luigifab.fr> - 2.0.0-1
 - New upstream release
 
 * Tue Jul 07 2026 Fabrice Creuzot <code@luigifab.fr> - 1.2.0-1
