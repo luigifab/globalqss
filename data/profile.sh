@@ -10,9 +10,9 @@
 # or when not found from:
 #        /usr/share/themes/[themeName]/qt5/* + /usr/share/themes/[themeName]/qt6/*
 #
-# where [themeName] is GQSS_THEME=xyz or current MATE GTK theme or current GNOME GTK theme
+# where [themeName] is GQSS_THEME=xyz or current desktop GTK theme
 #
-# You can override with:
+# When a theme is applied, you can override with:
 #      ~/.config/qt5/qt.qss     + ~/.config/qt6/qt.qss
 #      ~/.config/qt5/qt-rtl.qss + ~/.config/qt6/qt-rtl.qss
 #

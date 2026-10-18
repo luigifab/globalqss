@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated D/11/10/2026
+ * Updated J/15/10/2026
  *
  * Copyright 2025-2027 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -39,14 +39,48 @@ GlobalQSS::~GlobalQSS() {
 	}
 
 	#ifdef Q_OS_LINUX
-		if (gqss_monitor)
-			QDBusConnection::sessionBus().disconnect("ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify", this, SLOT(onNotify(QString)));
+		if (gqss_monitor) {
+			QDBusConnection::sessionBus().disconnect(
+				"org.xfce.Xfconf", "/org/xfce/Xfconf", "org.xfce.Xfconf",
+				"PropertyChanged", this, SLOT(onNotify(QDBusMessage)));
+			QDBusConnection::sessionBus().disconnect(
+				"ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer",
+				"Notify", this, SLOT(onNotify(QDBusMessage)));
+		}
 	#endif
 }
 
-void GlobalQSS::onNotify(QString path) {
+#ifdef Q_OS_LINUX
+void GlobalQSS::onNotify(const QDBusMessage &msg) {
 
-	if (qApp && ((path == "/org/gnome/desktop/interface/gtk-theme") || (path == "/org/mate/desktop/interface/gtk-theme"))) {
+	QList<QVariant> args = msg.arguments();
+	bool changed = false;
+
+	// xfconf(channel, property, value)
+	if (msg.member() == "PropertyChanged") {
+		changed = (args.size() > 1) && (args[0].toString() == "xsettings") && (args[1].toString() == "/Net/ThemeName");
+	}
+	// dconf(prefix, keys, tag), prefix is the key when one key is changed, else it's the common path of the changed keys
+	//  one key:  args[0]="/org/mate/desktop/interface/gtk-theme" args[1]=[""]
+	//  two keys: args[0]="/org/mate/desktop/interface/"          args[1]=["gtk-theme", "icon-theme"]
+	else if (args.size() > 1) {
+		QString watched, desktop = qEnvironmentVariable("XDG_CURRENT_DESKTOP").toUpper();
+		if (desktop.contains("MATE"))
+			watched = "/org/mate/desktop/interface/gtk-theme";
+		else if (desktop.contains("CINNAMON"))
+			watched = "/org/cinnamon/desktop/interface/gtk-theme";
+		else
+			watched = "/org/gnome/desktop/interface/gtk-theme";
+
+		for (const QString &key : args[1].toStringList()) {
+			if ((args[0].toString() + key) == watched) {
+				changed = true;
+				break;
+			}
+		}
+	}
+
+	if (qApp && changed) {
 
 		if (qEnvironmentVariableIsSet("GQSS_DEBUG"))
 			qDebug() << "GQSS: themeChanged";
@@ -60,6 +94,7 @@ void GlobalQSS::onNotify(QString path) {
 		qApp->setProperty("GQSS_SIGNAL", QVariant());
 	}
 }
+#endif
 
 void GlobalQSS::polish(QApplication *app) {
 
@@ -74,13 +109,25 @@ void GlobalQSS::polish(QApplication *app) {
 		return; // yolo
 	}
 
+	QString desktop = qEnvironmentVariable("XDG_CURRENT_DESKTOP").toUpper();
+
 	// @see https://github.com/loot/loot/issues/1896
 	// start monitoring of desktop theme change with dbus (disabled when application is started with GQSS_THEME=xyz)
 	// QDBusConnectionPrivate() got message (signal): QDBusMessage(type=Signal, service=":1.10", path="/ca/desrt/dconf/Writer/user", interface="ca.desrt.dconf.Writer", member="Notify", signature="sass", contents=("/org/mate/desktop/interface/gtk-theme", {""}, ":1.10:user:xyz") )
 	#ifdef Q_OS_LINUX
-		if (!gqss_monitor && !app->property("GQSS_SET").toBool() && !qEnvironmentVariableIsSet("GQSS_THEME") && (geteuid() != 0)) {
+		bool ignore = (QFileInfo(QCoreApplication::applicationFilePath()).fileName() == "VirtualBoxVM");
+		if (!ignore && !gqss_monitor && !app->property("GQSS_SET").toBool() && !qEnvironmentVariableIsSet("GQSS_THEME") && (geteuid() != 0)) {
 
-			gqss_monitor = QDBusConnection::sessionBus().connect("ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer", "Notify", this, SLOT(onNotify(QString)));
+			if (desktop.contains("XFCE")) {
+				gqss_monitor = QDBusConnection::sessionBus().connect(
+					"org.xfce.Xfconf", "/org/xfce/Xfconf", "org.xfce.Xfconf",
+					"PropertyChanged", this, SLOT(onNotify(QDBusMessage)));
+			}
+			else {
+				gqss_monitor = QDBusConnection::sessionBus().connect(
+					"ca.desrt.dconf", "/ca/desrt/dconf/Writer/user", "ca.desrt.dconf.Writer",
+					"Notify", this, SLOT(onNotify(QDBusMessage)));
+			}
 
 			if (qEnvironmentVariableIsSet("GQSS_DEBUG")) {
 				if (gqss_monitor)
@@ -108,15 +155,23 @@ void GlobalQSS::polish(QApplication *app) {
 		}
 	}
 
-	// read theme from GQSS_THEME or from MATE or from GNOME
+	// read theme from GQSS_THEME or from the desktop settings (current desktop settings or GNOME settings)
 	// if theme found, set GQSS_THEME
 	QString themeName = app->property("GQSS_THEME").toString().trimmed();
 	if (themeName.isEmpty())
 		themeName = qEnvironmentVariable("GQSS_THEME").trimmed();
-	if (themeName.isEmpty())
-		themeName = readThemeName("org.mate.interface", "gtk-theme");
-	if (themeName.isEmpty())
-		themeName = readThemeName("org.gnome.desktop.interface", "gtk-theme");
+
+	if (themeName.isEmpty()) {
+		if (desktop.contains("MATE"))
+			themeName = readThemeName("gsettings", {"get", "org.mate.interface", "gtk-theme"});
+		else if (desktop.contains("CINNAMON"))
+			themeName = readThemeName("gsettings", {"get", "org.cinnamon.desktop.interface", "gtk-theme"});
+		else if (desktop.contains("XFCE"))
+			themeName = readThemeName("xfconf-query", {"-c", "xsettings", "-p", "/Net/ThemeName"});
+		else
+			themeName = readThemeName("gsettings", {"get", "org.gnome.desktop.interface", "gtk-theme"});
+	}
+
 	if ((themeName == ".") || (themeName == "..") || themeName.contains('/') || themeName.contains('\\'))
 		themeName.clear();
 	if (!themeName.isEmpty())
@@ -237,7 +292,7 @@ void GlobalQSS::polish(QApplication *app) {
 		qDebug() << "GQSS: (end)";
 }
 
-QString GlobalQSS::readThemeName(QString path, QString key) {
+QString GlobalQSS::readThemeName(QString program, QStringList args) {
 
 	QString result;
 
@@ -257,6 +312,7 @@ QString GlobalQSS::readThemeName(QString path, QString key) {
 					QProcessEnvironment env;
 					env.insert("HOME", QString::fromUtf8(pw->pw_dir));
 					env.insert("XDG_DATA_DIRS", qEnvironmentVariable("XDG_DATA_DIRS"));
+					env.insert("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/" + QString::number(uid) + "/bus"); // for xfconf-query
 					QProcess cmd;
 					cmd.setProcessEnvironment(env);
 					cmd.start("/usr/bin/setpriv", QStringList()
@@ -264,7 +320,7 @@ QString GlobalQSS::readThemeName(QString path, QString key) {
 						<< ("--regid=" + QString::number(pw->pw_gid))
 						<< "--clear-groups"
 						<< "--no-new-privs"
-						<< "/usr/bin/gsettings" << "get" << path << key);
+						<< ("/usr/bin/" + program) << args);
 					cmd.waitForFinished(200);
 					result = QString::fromUtf8(cmd.readAllStandardOutput()).trimmed();
 					cmd.close();
@@ -280,7 +336,7 @@ QString GlobalQSS::readThemeName(QString path, QString key) {
 		// normal user
 		else {
 			QProcess cmd;
-			cmd.start("gsettings", QStringList() << "get" << path << key);
+			cmd.start(program, args);
 			cmd.waitForFinished(200);
 			result = QString::fromUtf8(cmd.readAllStandardOutput()).trimmed();
 			cmd.close();

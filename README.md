@@ -4,20 +4,22 @@
 
 This engine allows theming of Qt applications using QSS files, similar to how GTK applications are themed with CSS files.
 
-It finds the theme name from the environment variable `GQSS_THEME`, or from MATE settings, or from GNOME settings. It supports theme reload on desktop theme change (via DBus). It does nothing when -stylesheet is used.
+It finds the theme name from the environment variable `GQSS_THEME`, or from the current desktop settings (MATE, Cinnamon, Xfce, or GNOME settings also used by KDE, LXQt...). It supports theme reload on desktop theme change (via DBus). It does nothing when -stylesheet is used.
 
 ## Tips
 
 Standard theme files are:
 ```
-.themes/<example>/qt5/qt.qss
-.themes/<example>/qt5/qt-rtl.qss
-.themes/<example>/qt5/*.qss
+~/.themes/<example>/qt5/qt.qss     ← required
+~/.themes/<example>/qt5/qt-rtl.qss
+~/.themes/<example>/qt5/*.qss
 ...
-.themes/<example>/qt6/qt.qss
-.themes/<example>/qt6/qt-rtl.qss
-.themes/<example>/qt6/*.qss
+~/.themes/<example>/qt6/qt.qss     ← required
+~/.themes/<example>/qt6/qt-rtl.qss
+~/.themes/<example>/qt6/*.qss
 ```
+
+When a theme is applied, you can override it with `~/.config/qt5/qt.qss` and `~/.config/qt6/qt.qss`.
 
 Just as CSS for GTK isn't really CSS, QSS for Qt isn't really CSS either, and it supports even fewer features, [read the docs](https://doc.qt.io/qt-6/stylesheet-reference.html).
 
@@ -30,7 +32,7 @@ For an example, see [awf-qt](https://github.com/luigifab/awf-extended) and [huma
 
 Use `*-rtl.qss` for file names.
 
-Starting from version 1.2.0, RTL files are loaded after the non-rtl files only when the Qt application is running in right-to-left mode. Previously, these files were always loaded but in reverse order, so if both files define the same property (for example `QWidget { margin }`), the non-rtl file overrides and the theme is ok.
+Starting from version 1.2.0, RTL files are loaded only when the Qt application is running in right-to-left mode, each one just after its non-rtl file (`a.qss`, `a-rtl.qss`, `b.qss`, `b-rtl.qss`). Previously, these files were always loaded but in reverse order, so if both files define the same property (for example `QWidget { margin }`), the non-rtl file overrides and the theme is ok.
 
 ## Installation
 
@@ -111,7 +113,7 @@ Don't forget to add `::1 openshot.org www.openshot.org` in _/etc/hosts_ to disab
 
 ## Copyright
 
-- Current version: 2.0.0~nightly20261011
+- Current version: 2.0.0~nightly20261018
 - Compatibility: Qt 5.10..5.15 / 6.0..6.12
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 

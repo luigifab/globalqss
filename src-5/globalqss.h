@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated M/29/09/2026
+ * Updated J/15/10/2026
  *
  * Copyright 2025-2027 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -30,6 +30,7 @@
 #ifdef Q_OS_LINUX
 #include <QDBusConnection>
 #include <QDBusError>
+#include <QDBusMessage>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <pwd.h>
@@ -50,11 +51,13 @@ public:
 	void polish(QApplication *app) override;
 
 private:
-	QString readThemeName(QString path, QString key);
+	QString readThemeName(QString program, QStringList args);
 	QString readFile(QApplication *app, QDir dir, QString name);
 
+#ifdef Q_OS_LINUX
 private slots:
-	void onNotify(QString path);
+	void onNotify(const QDBusMessage &msg);
+#endif
 };
 
 #endif
