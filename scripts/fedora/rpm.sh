@@ -18,7 +18,7 @@ if [ true ]; then
 	spectool -g -R globalqss.spec
 else
 	temp=globalqss-$version
-	mkdir /tmp/$temp
+	mkdir /tmp/$temp || exit 1
 	cp -r ../../* /tmp/$temp/
 	rm -rf /tmp/$temp/scripts/*/builder/
 

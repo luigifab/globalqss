@@ -19,7 +19,7 @@ Standard theme files are:
 ~/.themes/<example>/qt6/*.qss
 ```
 
-When a theme is applied, you can override it with `~/.config/qt5/qt.qss` and `~/.config/qt6/qt.qss`.
+When a theme is applied, you can override it with: `~/.config/qt5/qt.qss ~/.config/qt5/qt-rtl.qss ~/.config/qt6/qt.qss ~/.config/qt6/qt-rtl.qss`
 
 Just as CSS for GTK isn't really CSS, QSS for Qt isn't really CSS either, and it supports even fewer features, [read the docs](https://doc.qt.io/qt-6/stylesheet-reference.html).
 
@@ -113,7 +113,7 @@ Don't forget to add `::1 openshot.org www.openshot.org` in _/etc/hosts_ to disab
 
 ## Copyright
 
-- Current version: 2.0.0~nightly20261018
+- Current version: 2.0.0~nightly20261025
 - Compatibility: Qt 5.10..5.15 / 6.0..6.12
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 
