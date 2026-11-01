@@ -83,7 +83,8 @@ for qt in "5" "6"; do
     continue
   fi
 
-  cmake -S src-$qt -B build-qt$qt \
+  cmake -S src -B build-qt$qt \
+    -DQT_MAJOR=$qt \
     -DCMAKE_C_FLAGS="${SLKCFLAGS}" \
     -DCMAKE_CXX_FLAGS="${SLKCFLAGS}" \
     -DCMAKE_INSTALL_PREFIX="/usr" \

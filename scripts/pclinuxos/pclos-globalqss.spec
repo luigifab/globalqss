@@ -108,13 +108,13 @@ Après la désinstallation, veillez à supprimer le fichier de config :
 %build
 %if %{with qt5}
  mkdir build-qt5 && pushd build-qt5
- %cmake -S ../src-5/
+ %cmake -S ../src/ -DQT_MAJOR=5
  %cmake_build
  popd
 %endif
 %if %{with qt6}
  mkdir build-qt6 && pushd build-qt6
- %cmake -S ../src-6/
+ %cmake -S ../src/ -DQT_MAJOR=6
  %cmake_build
  popd
 %endif

@@ -6,15 +6,15 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure --sourcedirectory=src-5 --builddirectory=build-qt5
-	dh_auto_configure --sourcedirectory=src-6 --builddirectory=build-qt6
+	dh_auto_configure --sourcedirectory=src --builddirectory=build-qt5 -- -DQT_MAJOR=5
+	dh_auto_configure --sourcedirectory=src --builddirectory=build-qt6 -- -DQT_MAJOR=6
 
 override_dh_auto_build:
-	dh_auto_build --sourcedirectory=src-5 --builddirectory=build-qt5
-	dh_auto_build --sourcedirectory=src-6 --builddirectory=build-qt6
+	dh_auto_build --sourcedirectory=src --builddirectory=build-qt5
+	dh_auto_build --sourcedirectory=src --builddirectory=build-qt6
 
 override_dh_auto_install:
 	cp data/profile.sh debian/qt5-style-globalqss.sh
-	dh_auto_install --sourcedirectory=src-5 --builddirectory=build-qt5
+	dh_auto_install --sourcedirectory=src --builddirectory=build-qt5
 	cp data/profile.sh debian/qt6-style-globalqss.sh
-	dh_auto_install --sourcedirectory=src-6 --builddirectory=build-qt6
+	dh_auto_install --sourcedirectory=src --builddirectory=build-qt6

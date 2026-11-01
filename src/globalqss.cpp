@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/15/10/2026
+ * Updated D/01/11/2026
  *
  * Copyright 2025-2027 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -50,11 +50,13 @@ GlobalQSS::~GlobalQSS() {
 	#endif
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 bool GlobalQSS::event(QEvent *e) {
 	//qDebug() << "GQSS: event type:" << e->type();
 	// @see https://stackoverflow.com/q/79928058
 	return (e->type() == QEvent::MetaCall) ? QObject::event(e) : QProxyStyle::event(e);
 }
+#endif
 
 #ifdef Q_OS_LINUX
 void GlobalQSS::onNotify(const QDBusMessage &msg) {

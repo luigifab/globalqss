@@ -1,6 +1,6 @@
 /**
  * Created M/25/11/2025
- * Updated J/15/10/2026
+ * Updated D/01/11/2026
  *
  * Copyright 2025-2027 | Fabrice Creuzot (luigifab) <code~luigifab~fr>
  * https://github.com/luigifab/globalqss
@@ -47,6 +47,9 @@ class GlobalQSS : public QProxyStyle
 public:
 	GlobalQSS() = default;
 	~GlobalQSS();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+	bool event(QEvent *e) override;
+#endif
 	void polish(QApplication *app) override;
 
 private:

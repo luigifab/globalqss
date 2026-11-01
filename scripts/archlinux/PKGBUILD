@@ -16,8 +16,8 @@ prepare() {
 
 build() {
   cd "$pkgbase-$pkgver"
-  cmake -S src-5 -B build-qt5
-  cmake -S src-6 -B build-qt6
+  cmake -S src -B build-qt5 -DQT_MAJOR=5
+  cmake -S src -B build-qt6 -DQT_MAJOR=6
   cmake --build build-qt5
   cmake --build build-qt6
 }
