@@ -1,7 +1,7 @@
 # This engine allows theming of Qt 5/6 applications using QSS files,
 # similar to how GTK applications are themed with CSS files.
 #
-# Files (*.qss) when qt.qss exists comes from:
+# Files (*.qss) when qt.qss exists come from:
 #    ~/.local/share/themes/[themeName]/qt5/* + ~/.local/share/themes/[themeName]/qt6/*
 # or when not found from:
 #                ~/.themes/[themeName]/qt5/* + ~/.themes/[themeName]/qt6/*

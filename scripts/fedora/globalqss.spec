@@ -10,7 +10,8 @@ License:       GPL-2.0-or-later
 URL:           https://github.com/luigifab/globalqss
 Source0:       %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
-BuildRequires: aspell-fr
+
+
 BuildRequires: cmake
 BuildRequires: gcc-c++
 %if %{with qt5}
@@ -19,7 +20,6 @@ BuildRequires: qt5-qtbase-devel
 %if %{with qt6}
 BuildRequires: qt6-qtbase-devel
 %endif
-
 
 %if %{with qt5}
 %package -n qt5-globalqss

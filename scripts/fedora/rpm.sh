@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fedora: sudo dnf install rpmdevtools rpm-sign cmake qt5-qtbase-devel qt6-qtbase-devel aspell-fr enchant2-aspell
+# Fedora: sudo dnf install rpmdevtools rpm-sign cmake qt5-qtbase-devel qt6-qtbase-devel
 # Fedora: configure: error: C compiler cannot create executables? remove and reinstall glibc-devel gcc
 
 cd "$(dirname "$0")" || exit 1
@@ -23,7 +23,9 @@ else
 	rm -rf /tmp/$temp/scripts/*/builder/
 
 	mv /tmp/$temp builder/
-	cp /usr/share/common-licenses/GPL*2 builder/$temp/LICENSE
+	if [ ! -f builder/$temp/LICENSE ]; then
+		cp /usr/share/common-licenses/GPL*2 builder/$temp/LICENSE
+	fi
 
 	cd builder/
 	tar czf $temp.tar.gz $temp
