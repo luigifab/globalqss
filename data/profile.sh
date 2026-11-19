@@ -12,7 +12,7 @@
 #
 # where [themeName] is GQSS_THEME=xyz or current desktop GTK theme
 #
-# When a theme is applied, you can override with:
+# When a theme is applied, you can override it with:
 #      ~/.config/qt5/qt.qss     + ~/.config/qt6/qt.qss
 #      ~/.config/qt5/qt-rtl.qss + ~/.config/qt6/qt-rtl.qss
 #

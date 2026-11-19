@@ -109,11 +109,11 @@ The customize interface dialog can crash the program.
 
 Stay on version 3.1.1 to use the system theme.
 
-Don't forget to add `::1 openshot.org www.openshot.org` in _/etc/hosts_ to disable the OpenShot mouchard.
+Don't forget to add `::1 openshot.org www.openshot.org google-analytics.com www.google-analytics.com` in _/etc/hosts_ to disable the OpenShot telemetry.
 
 ## Copyright
 
-- Current version: 2.0.0~nightly20261107
+- Current version: 2.0.0~nightly20261119
 - Compatibility: Qt 5.10..5.15 / 6.0..6.12
 - Links: [luigifab.fr](https://www.luigifab.fr/gtkqt/globalqss) - [github.com](https://github.com/luigifab/globalqss) - [ppa/dpa](https://launchpad.net/~luigifab/+archive/ubuntu/packages)
 
